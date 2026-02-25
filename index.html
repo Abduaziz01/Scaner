@@ -1,0 +1,66 @@
+html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Сканер QR-кодов с камеры</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    #reader { width: 320px; margin: 20px 0; }
+    #result { font-size: 1.2em; margin-top: 10px; }
+    a { color: #007bff; text-decoration: underline; }
+    button { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>Сканер QR-кодов с камеры</h2>
+  <div id="reader"></div>
+  <div id="result"></div>
+  <button id="startBtn">Включить сканер</button>
+  <button id="stopBtn" style="display:none;">Остановить сканер</button>
+  <script>
+    let html5Qr;
+    const resultDiv = document.getElementById('result');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+
+    function isUrl(text) {
+      try {
+        new URL(text);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    startBtn.onclick = async function() {
+      startBtn.style.display = 'none';
+      stopBtn.style.display = '';
+      resultDiv.textContent = '';
+      html5Qr = new Html5Qrcode("reader");
+      await html5Qr.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        (decodedText) => {
+          if (isUrl(decodedText)) {
+            resultDiv.innerHTML = 'QR-код: <a href="' + decodedText + '" target="_blank">' + decodedText + '</a>';
+          } else {
+            resultDiv.textContent = 'QR-код: ' + decodedText;
+          }
+          html5Qr.stop();
+          startBtn.style.display = '';
+          stopBtn.style.display = 'none';
+        }
+      );
+    };
+
+    stopBtn.onclick = function() {
+      if (html5Qr) {
+        html5Qr.stop();
+        startBtn.style.display = '';
+        stopBtn.style.display = 'none';
+      }
+    };
+  </script>
+</body>
+</html>
